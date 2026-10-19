@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bavardage</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#00a884">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<style>
+:root{--bg:#f0f2f5;--panel:#fff;--text:#111b21;--muted:#667781;--line:#e9edef;--me:#d9fdd3;--them:#fff;--accent:#00a884;--head:#f0f2f5;--chat:#efeae2;--tick:#53bdeb;--badge:#00a884;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b141a;--panel:#111b21;--text:#e9edef;--muted:#8696a0;--line:#222d34;--me:#005c4b;--them:#202c33;--accent:#00a884;--head:#202c33;--chat:#0b141a;--tick:#53bdeb}}
+:root[data-theme="dark"]{--bg:#0b141a;--panel:#111b21;--text:#e9edef;--muted:#8696a0;--line:#222d34;--me:#005c4b;--them:#202c33;--accent:#00a884;--head:#202c33;--chat:#0b141a;--tick:#53bdeb}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.app{height:100%;display:grid;grid-template-columns:360px 1fr;max-width:1200px;margin:0 auto;background:var(--panel)}
+.side,.main{display:flex;flex-direction:column;min-height:0;min-width:0}
+.side{border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--head);min-height:58px}
+.bar h1{font-size:20px;font-weight:700;color:var(--accent);flex:1}
+.search{padding:8px 12px;border-bottom:1px solid var(--line)}
+.search input{width:100%;border:0;border-radius:10px;padding:9px 14px;background:var(--bg);color:var(--text);font:inherit;outline:none}
+.list{overflow-y:auto;flex:1}
+.row{display:flex;gap:12px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--line);align-items:center}
+.row:hover,.row.on{background:var(--bg)}
+.av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:600;flex:none}
+.mid{flex:1;min-width:0}
+.top{display:flex;justify-content:space-between;gap:8px}
+.name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.time{font-size:12px;color:var(--muted);flex:none}
+.prev{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:14px}
+.prev span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{background:var(--badge);color:#fff;border-radius:999px;min-width:20px;height:20px;padding:0 6px;font-size:12px;display:grid;place-items:center;flex:none}
+.main{background:var(--chat)}
+.main .bar .who{flex:1;min-width:0}
+.main .bar .st{font-size:12px;color:var(--muted)}
+.back{display:none;border:0;background:none;color:var(--text);font-size:24px;cursor:pointer;padding:0 4px}
+.msgs{flex:1;overflow-y:auto;padding:14px 8%;display:flex;flex-direction:column;gap:4px}
+.b{max-width:75%;padding:6px 9px 4px;border-radius:10px;background:var(--them);box-shadow:0 1px 1px rgba(0,0,0,.12);word-wrap:break-word;overflow-wrap:anywhere}
+.b.me{align-self:flex-end;background:var(--me);border-top-right-radius:2px}
+.b.them{align-self:flex-start;border-top-left-radius:2px}
+.meta{font-size:11px;color:var(--muted);text-align:right;margin-left:12px;float:right;margin-top:6px}
+.tk{color:var(--muted)}.tk.r{color:var(--tick)}
+.day{align-self:center;background:var(--panel);color:var(--muted);font-size:12px;padding:3px 10px;border-radius:8px;margin:8px 0}
+.typing{align-self:flex-start;background:var(--them);padding:8px 12px;border-radius:10px;display:flex;gap:4px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bl 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,60%,100%{opacity:.3}30%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.typing i{animation:none}}
+.comp{display:flex;gap:8px;padding:10px 12px;background:var(--head)}
+.comp input{flex:1;border:0;border-radius:22px;padding:11px 16px;background:var(--panel);color:var(--text);font:inherit;outline:none}
+.comp button,.ic{border:0;border-radius:50%;width:44px;height:44px;background:var(--accent);color:#fff;font-size:18px;cursor:pointer;flex:none}
+.ic{background:none;color:var(--muted);width:36px;height:36px;font-size:18px}
+button:focus-visible,input:focus-visible,.row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.empty{margin:auto;text-align:center;color:var(--muted);padding:24px}
+.empty b{display:block;font-size:22px;color:var(--text);margin-bottom:6px}
+@media (max-width:759px){
+.app{grid-template-columns:1fr}
+.main{display:none}
+.app.open .side{display:none}
+.app.open .main{display:flex}
+.back{display:block}
+.msgs{padding:12px}
+}
+.onb{display:none;position:fixed;inset:0;z-index:20;background:var(--bg);align-items:center;justify-content:center;padding:20px;overflow:auto}
+.card{background:var(--panel);border-radius:16px;padding:28px 24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.1)}
+.card h2{font-size:22px}.card p{color:var(--muted)}
+.ph{display:flex;gap:8px}
+.ph select,.ph input,.card input.code,.addf input{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg);color:var(--text);font:inherit}
+.ph input,.addf input{flex:1;min-width:0}
+.card input.code{text-align:center;font-size:24px;letter-spacing:8px}
+.go{border:0;border-radius:24px;background:var(--accent);color:#fff;padding:13px;font:inherit;font-weight:600;cursor:pointer}
+.lnk{border:0;background:none;color:var(--accent);font:inherit;cursor:pointer;padding:4px}
+.err{color:#e0453a;min-height:18px;font-size:14px}
+.demo{background:var(--me);border-radius:10px;padding:10px 12px;font-size:14px}
+.addf{display:none;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}.addf.on{display:flex}
+.addf button{border:0;border-radius:10px;background:var(--accent);color:#fff;padding:0 14px;font:inherit;cursor:pointer}
+.bar h1 small{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+</style>
+
+</head>
+<body>
+<div class="onb" id="onb"></div>
+<div class="app" id="app" style="display:none">
+  <aside class="side">
+    <div class="bar"><h1>Bavardage<small id="mynum"></small></h1><button class="ic" id="add" title="Nouvelle discussion" aria-label="Nouvelle discussion">＋</button><button class="ic" id="theme" title="Changer de thème" aria-label="Changer de thème">◐</button><button class="ic" id="out" title="Se déconnecter" aria-label="Se déconnecter">⎋</button></div>
+    <div class="addf" id="addf"><input id="addn" placeholder="Numéro (+33…) ou e-mail du contact" aria-label="Contact"><button id="addgo">Ouvrir</button></div>
+    <div class="err" id="adderr" style="padding:0 14px"></div>
+    <div class="list" id="list"></div>
+  </aside>
+  <section class="main" id="main"></section>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var COLORS=["#00a884","#5b6ee1","#e0674a","#a05cc7","#d6a31c","#2a9fbf"];
+var T=null,me=null,socket=null,chats=[],active=null,msgs=[],unread={},pendingEmail="";
+try{T=localStorage.getItem("bav_t")}catch(e){}
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function hm(ts){return new Date(ts).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}
+function dayLabel(ts){var d=new Date(ts),t=new Date(),y=new Date(Date.now()-864e5);
+ if(d.toDateString()===t.toDateString())return "Aujourd’hui";
+ if(d.toDateString()===y.toDateString())return "Hier";
+ return d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}
+function listTime(ts){return new Date(ts).toDateString()===new Date().toDateString()?hm(ts):dayLabel(ts)}
+function label(u){return u.name||u.phone}
+function av(u){return '<div class="av" style="background:'+COLORS[u.id%COLORS.length]+'">'+esc((u.name||u.phone.slice(-2)).slice(0,1).toUpperCase())+'</div>'}
+async function api(path,method,body){
+ var r=await fetch(path,{method:method||"GET",headers:Object.assign({"content-type":"application/json"},T?{authorization:"Bearer "+T}:{}),body:body?JSON.stringify(body):undefined});
+ var j=await r.json().catch(function(){return{}});
+ if(!r.ok){var e=new Error(j.error||"Erreur réseau");e.status=r.status;throw e}
+ return j;
+}
+function screen(html){$("app").style.display="none";$("onb").style.display="flex";$("onb").innerHTML='<div class="card">'+html+'</div>'}
+var pending={kind:"email",v:""};
+var FIELD='class="code" style="letter-spacing:0;font-size:16px;text-align:left"';
+function stepEmail(msg,kind){
+ kind=kind||pending.kind;var ph=kind==="phone";
+ screen('<h2>Bienvenue</h2><p>'+(ph?'Entrez votre numéro avec l’indicatif. Nous vous envoyons un code par SMS.':'Entrez votre adresse e-mail. Nous vous envoyons un code de vérification.')+'</p><div class="ph"><button class="'+(ph?'lnk':'go')+'" id="k1" style="flex:1">E-mail</button><button class="'+(ph?'go':'lnk')+'" id="k2" style="flex:1">SMS</button></div><input '+FIELD+' id="em" type="'+(ph?'tel':'email')+'" inputmode="'+(ph?'tel':'email')+'" placeholder="'+(ph?'+33 6 12 34 56 78':'vous@exemple.com')+'" aria-label="'+(ph?'Numéro':'E-mail')+'"><div class="err" id="err">'+esc(msg||"")+'</div><button class="go" id="go">Recevoir le code</button>');
+ $("k1").onclick=function(){stepEmail("","email")};
+ $("k2").onclick=function(){stepEmail("","phone")};
+ var go=async function(){
+  var v=$("em").value.trim();$("go").disabled=true;
+  try{await api("/api/request-code","POST",ph?{phone:v}:{email:v});pending={kind:kind,v:v};stepCode()}
+  catch(e){$("err").textContent=e.message;$("go").disabled=false}
+ };
+ $("go").onclick=go;$("em").onkeydown=function(e){if(e.key==="Enter")go()};$("em").focus();
+}
+function pbody(extra){var b=pending.kind==="phone"?{phone:pending.v}:{email:pending.v};for(var k in extra)b[k]=extra[k];return b}
+function stepCode(){
+ var ph=pending.kind==="phone";
+ screen('<h2>Vérification</h2><p>Un code à 6 chiffres vient d’être envoyé '+(ph?'par SMS au ':'à ')+esc(pending.v)+'.'+(ph?'':' Pensez à regarder les courriers indésirables.')+'</p><input class="code" id="cd" inputmode="numeric" maxlength="6" placeholder="······" autocomplete="one-time-code" aria-label="Code"><div class="err" id="err"></div><button class="go" id="go">Vérifier</button><button class="lnk" id="rs">Renvoyer le code</button><button class="lnk" id="ch">Changer</button>');
+ var go=async function(){
+  try{
+   var j=await api("/api/verify","POST",pbody({code:$("cd").value}));
+   T=j.token;try{localStorage.setItem("bav_t",T)}catch(e){}
+   me=j.user;me.phone?startApp():stepProfile();
+  }catch(e){$("err").textContent=e.message}
+ };
+ $("go").onclick=go;$("cd").onkeydown=function(e){if(e.key==="Enter")go()};
+ $("rs").onclick=async function(){try{await api("/api/request-code","POST",pbody());$("err").textContent="Nouveau code envoyé."}catch(e){$("err").textContent=e.message}};
+ $("ch").onclick=function(){stepEmail()};$("cd").focus();
+}
+function stepProfile(){
+ screen('<h2>Votre profil</h2><p>Ce numéro permet à vos contacts de vous trouver. Il n’est pas vérifié par SMS.</p><input class="code" style="letter-spacing:0;font-size:16px;text-align:left" id="nm" placeholder="Votre prénom (facultatif)" aria-label="Prénom"><input class="code" style="letter-spacing:0;font-size:16px;text-align:left" id="ph" type="tel" inputmode="tel" placeholder="+33 6 12 34 56 78" aria-label="Numéro"><div class="err" id="err"></div><button class="go" id="go">Commencer</button>');
+ var go=async function(){
+  try{me=await api("/api/profile","POST",{phone:$("ph").value,name:$("nm").value});startApp()}
+  catch(e){$("err").textContent=e.message}
+ };
+ $("go").onclick=go;$("ph").onkeydown=function(e){if(e.key==="Enter")go()};$("nm").focus();
+}
+async function startApp(){
+ $("onb").style.display="none";$("app").style.display="";$("mynum").textContent=label(me);
+ renderMain();
+ socket=io({auth:{token:T}});
+ socket.on("msg",onMsg);
+ await loadChats();
+}
+async function loadChats(){try{chats=await api("/api/chats");renderList()}catch(e){}}
+function renderMain(){$("main").innerHTML='<div class="empty"><b>Bavardage</b>Touchez ＋ et entrez le numéro ou l’e-mail d’un contact inscrit.</div>'}
+function renderList(){
+ $("list").innerHTML=chats.length?chats.map(function(c){
+  return '<div class="row'+(active&&active.id===c.id?' on':'')+'" tabindex="0" data-id="'+c.id+'">'+av(c)+'<div class="mid"><div class="top"><span class="name">'+esc(label(c))+'</span><span class="time">'+listTime(c.ts)+'</span></div><div class="prev"><span>'+(c.from_id===me.id?"Vous : ":"")+esc(c.text)+'</span>'+(unread[c.id]?'<span class="badge">●</span>':'')+'</div></div></div>';
+ }).join(""):'<div class="empty">Aucune discussion pour l’instant.</div>';
+}
+async function openChat(u){
+ active=u;delete unread[u.id];$("app").classList.add("open");
+ $("main").innerHTML='<div class="bar"><button class="back" id="back" aria-label="Retour">‹</button>'+av(u)+'<div class="who"><div class="name">'+esc(label(u))+'</div><div class="st">'+esc(u.phone)+'</div></div></div><div class="msgs" id="msgs"></div><div class="err" id="serr" style="padding:0 14px"></div><div class="comp"><input id="inp" placeholder="Écrire un message" autocomplete="off" aria-label="Message"><button id="send" aria-label="Envoyer">➤</button></div>';
+ $("send").onclick=send;$("inp").onkeydown=function(e){if(e.key==="Enter")send()};
+ $("back").onclick=function(){active=null;$("app").classList.remove("open");renderMain();renderList()};
+ if(matchMedia("(min-width:760px)").matches)$("inp").focus();
+ try{msgs=await api("/api/messages/"+u.id)}catch(e){msgs=[]}
+ renderMsgs();renderList();
+}
+function renderMsgs(){
+ var m=$("msgs");if(!m)return;var h="",last="";
+ msgs.forEach(function(x){
+  var dl=dayLabel(x.ts),mine=x.from===me.id;
+  if(dl!==last){h+='<div class="day">'+dl+'</div>';last=dl}
+  h+='<div class="b '+(mine?"me":"them")+'">'+esc(x.text)+'<span class="meta">'+hm(x.ts)+(mine?' <span class="tk">✓</span>':'')+'</span></div>';
+ });
+ m.innerHTML=h;m.scrollTop=m.scrollHeight;
+}
+function send(){
+ var i=$("inp"),v=i.value.trim();if(!v||!active)return;
+ $("serr").textContent="";i.value="";
+ socket.emit("send",{to:active.id,text:v},function(a){if(!a||!a.ok)$("serr").textContent="Message non envoyé."});
+}
+function onMsg(m){
+ var other=m.from===me.id?m.to:m.from;
+ if(active&&active.id===other){
+  if(!msgs.some(function(x){return x.id===m.id})){msgs.push(m);renderMsgs()}
+ }else if(m.from!==me.id)unread[other]=true;
+ loadChats();
+}
+$("list").onclick=function(e){var r=e.target.closest(".row");if(r)openFromList(+r.dataset.id)};
+$("list").onkeydown=function(e){if(e.key==="Enter"){var r=e.target.closest(".row");if(r)openFromList(+r.dataset.id)}};
+function openFromList(id){var c=chats.filter(function(x){return x.id===id})[0];if(c)openChat(c)}
+$("add").onclick=function(){$("addf").classList.toggle("on");$("addn").focus()};
+$("addgo").onclick=async function(){
+ $("adderr").textContent="";
+ try{var u=await api("/api/find?q="+encodeURIComponent($("addn").value));$("addn").value="";$("addf").classList.remove("on");openChat(u)}
+ catch(e){$("adderr").textContent=e.message}
+};
+$("out").onclick=async function(){
+ try{await api("/api/logout","POST")}catch(e){}
+ try{localStorage.removeItem("bav_t")}catch(e){}
+ if(socket)socket.disconnect();T=null;me=null;active=null;stepEmail();
+};
+$("theme").onclick=function(){
+ var r=document.documentElement,dark=getComputedStyle(r).getPropertyValue("--bg").trim()==="#0b141a";
+ r.setAttribute("data-theme",dark?"light":"dark");
+};
+(async function(){
+ if(!T)return stepEmail();
+ try{me=await api("/api/me");me.phone?startApp():stepProfile()}
+ catch(e){T=null;stepEmail()}
+})();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
+</script>
+</body>
+</html>
